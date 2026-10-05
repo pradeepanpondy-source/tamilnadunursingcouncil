@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Source Sans 3", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-ui: "Inter", "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-ui);
+    color: #1E242B;
+    background-color: #F7F8FA;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Clear, accessible keyboard focus ring */
+  *:focus-visible {
+    outline: 2px solid #2C7A7B;
+    outline-offset: 2px;
+  }
+}
