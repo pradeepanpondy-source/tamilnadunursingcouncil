@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   X,
   ExternalLink,
@@ -28,6 +28,9 @@ export interface ChatLayoutProps {
 
 const STORAGE_CONVERSATIONS_KEY = 'tnnmc_recent_conversations_v2';
 const STORAGE_ACTIVE_CONV_KEY = 'tnnmc_active_conversation_id_v2';
+
+/** Maximum ms to wait for a response before showing an error */
+const RESPONSE_TIMEOUT_MS = 8000;
 
 function loadPersistedConversations(): Conversation[] {
   try {
@@ -92,10 +95,25 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
   const [conversations, setConversations] = useState<Conversation[]>(() =>
     loadPersistedConversations()
   );
+
+  // Validate the persisted active ID against loaded conversations
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
-  >(() => loadPersistedActiveId());
+  >(() => {
+    const persistedId = loadPersistedActiveId();
+    const initialConvs = loadPersistedConversations();
+    if (persistedId && initialConvs.some((c) => c.id === persistedId)) {
+      return persistedId;
+    }
+    return null;
+  });
+
   const [isTyping, setIsTyping] = useState(false);
+  const [responseError, setResponseError] = useState<string | null>(null);
+  const [lastFailedMessage, setLastFailedMessage] = useState<{
+    content: string;
+    attachmentName?: string;
+  } | null>(null);
 
   // Sidebar states for desktop & mobile
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] =
@@ -106,6 +124,15 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
   const [activeDialog, setActiveDialog] = useState<
     'profile' | 'help' | 'settings' | null
   >(null);
+
+  // Track the active conversation ID in a ref for timeout callbacks
+  const activeConvIdRef = useRef(activeConversationId);
+  useEffect(() => {
+    activeConvIdRef.current = activeConversationId;
+  }, [activeConversationId]);
+
+  // Response timeout guard ref
+  const responseTimeoutRef = useRef<number | null>(null);
 
   // Persist Recent Conversations list in localStorage
   useEffect(() => {
@@ -134,6 +161,15 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
       // Ignore storage write errors
     }
   }, [activeConversationId]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (responseTimeoutRef.current) {
+        window.clearTimeout(responseTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // User Profile State (Frontend-only)
   const initialName = formatDisplayName(userIdentifier, userName);
@@ -173,11 +209,23 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
   const handleNewChat = () => {
     setActiveConversationId(null);
     setIsTyping(false);
+    setResponseError(null);
+    setLastFailedMessage(null);
+    if (responseTimeoutRef.current) {
+      window.clearTimeout(responseTimeoutRef.current);
+      responseTimeoutRef.current = null;
+    }
   };
 
   // Toggle mock chat states in the main window when clicking history items
   const handleSelectConversation = (id: string) => {
     setIsTyping(false);
+    setResponseError(null);
+    setLastFailedMessage(null);
+    if (responseTimeoutRef.current) {
+      window.clearTimeout(responseTimeoutRef.current);
+      responseTimeoutRef.current = null;
+    }
     setActiveConversationId((prevId) => (prevId === id ? null : id));
   };
 
@@ -197,73 +245,128 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
     );
   };
 
-  const handleSendMessage = (content: string, attachmentName?: string) => {
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      timestamp: formatCurrentTime(),
-      content,
-      attachmentName,
-    };
+  const dispatchAssistantResponse = useCallback(
+    (content: string, attachmentName: string | undefined, convId: string) => {
+      // Clear any previous timeout
+      if (responseTimeoutRef.current) {
+        window.clearTimeout(responseTimeoutRef.current);
+        responseTimeoutRef.current = null;
+      }
 
-    let targetConvId = activeConversationId;
+      setResponseError(null);
+      setIsTyping(true);
 
-    if (!targetConvId) {
-      const newConvId = `conv-${Date.now()}`;
-      const newConv: Conversation = {
-        id: newConvId,
-        title: summarizeConversationTitle(content),
-        updatedAt: 'Just now',
-        messages: [userMessage],
-      };
-      setConversations((prev) => [newConv, ...prev]);
-      setActiveConversationId(newConvId);
-      targetConvId = newConvId;
-    } else {
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === targetConvId
-            ? {
-                ...conv,
-                updatedAt: 'Just now',
-                messages: [...conv.messages, userMessage],
-              }
-            : conv
-        )
-      );
-    }
+      // Safety timeout — if response never arrives, show error
+      responseTimeoutRef.current = window.setTimeout(() => {
+        setIsTyping(false);
+        setResponseError(
+          'Unable to get a response right now. Please try again.'
+        );
+        setLastFailedMessage({ content, attachmentName });
+        responseTimeoutRef.current = null;
+      }, RESPONSE_TIMEOUT_MS);
 
-    setIsTyping(true);
+      // Simulate network delay then deliver mock response
+      window.setTimeout(() => {
+        // Cancel the safety timeout since we got a response
+        if (responseTimeoutRef.current) {
+          window.clearTimeout(responseTimeoutRef.current);
+          responseTimeoutRef.current = null;
+        }
 
-    const capturedConvId = targetConvId;
-    window.setTimeout(() => {
-      const replyData = buildAssistantResponse(content);
-      const assistantMessage: Message = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
+        try {
+          const replyData = buildAssistantResponse(content);
+          const assistantMessage: Message = {
+            id: `assistant-${Date.now()}`,
+            role: 'assistant',
+            timestamp: formatCurrentTime(),
+            content: replyData.content,
+            blocks: replyData.blocks,
+            source: replyData.source,
+          };
+
+          setConversations((prev) =>
+            prev.map((conv) =>
+              conv.id === convId
+                ? {
+                    ...conv,
+                    messages: [...conv.messages, assistantMessage],
+                  }
+                : conv
+            )
+          );
+          setIsTyping(false);
+          setResponseError(null);
+          setLastFailedMessage(null);
+        } catch {
+          setIsTyping(false);
+          setResponseError(
+            'Unable to get a response right now. Please try again.'
+          );
+          setLastFailedMessage({ content, attachmentName });
+        }
+      }, 650);
+    },
+    []
+  );
+
+  const handleSendMessage = useCallback(
+    (content: string, attachmentName?: string) => {
+      if (!content.trim() && !attachmentName) return;
+      if (isTyping) return;
+
+      const userMessage: Message = {
+        id: `user-${Date.now()}`,
+        role: 'user',
         timestamp: formatCurrentTime(),
-        content: replyData.content,
-        blocks: replyData.blocks,
-        source: replyData.source,
+        content,
+        attachmentName,
       };
 
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === capturedConvId
-            ? {
-                ...conv,
-                messages: [...conv.messages, assistantMessage],
-              }
-            : conv
-        )
-      );
-      setIsTyping(false);
-    }, 650);
-  };
+      let targetConvId = activeConvIdRef.current;
+
+      if (!targetConvId) {
+        const newConvId = `conv-${Date.now()}`;
+        const newConv: Conversation = {
+          id: newConvId,
+          title: summarizeConversationTitle(content),
+          updatedAt: 'Just now',
+          messages: [userMessage],
+        };
+        setConversations((prev) => [newConv, ...prev]);
+        setActiveConversationId(newConvId);
+        targetConvId = newConvId;
+      } else {
+        setConversations((prev) =>
+          prev.map((conv) =>
+            conv.id === targetConvId
+              ? {
+                  ...conv,
+                  updatedAt: 'Just now',
+                  messages: [...conv.messages, userMessage],
+                }
+              : conv
+          )
+        );
+      }
+
+      dispatchAssistantResponse(content, attachmentName, targetConvId);
+    },
+    [isTyping, dispatchAssistantResponse]
+  );
+
+  const handleRetry = useCallback(() => {
+    if (!lastFailedMessage) return;
+    setResponseError(null);
+    handleSendMessage(lastFailedMessage.content, lastFailedMessage.attachmentName);
+  }, [lastFailedMessage, handleSendMessage]);
 
   const handleResetHistory = () => {
     setConversations(INITIAL_CONVERSATIONS);
     setActiveConversationId(null);
+    setIsTyping(false);
+    setResponseError(null);
+    setLastFailedMessage(null);
     try {
       window.localStorage.removeItem(STORAGE_CONVERSATIONS_KEY);
       window.localStorage.removeItem(STORAGE_ACTIVE_CONV_KEY);
@@ -298,6 +401,9 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
     setActiveDialog('profile');
   };
 
+  const hasActiveChat =
+    activeConversation !== null && activeConversation.messages.length > 0;
+
   return (
     <div className="h-screen w-full overflow-hidden flex bg-[#F7F8FA] text-[#1E242B]">
       {/* Left Sidebar (Collapsible on Desktop, Slide-Out Drawer on Mobile) */}
@@ -320,8 +426,17 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
         onSignOut={onSignOut}
       />
 
-      {/* Main Chat Area */}
+      {/*
+        Main Chat Area
+        ─────────────
+        flex column, fills remaining height:
+          ① ChatHeader   — shrink-0 (fixed height)
+          ② Chat viewport — flex-1, min-h-0 (takes remaining space)
+               ├─ EMPTY STATE: flex column, centers welcome + composer naturally
+               └─ ACTIVE STATE: scrollable message log + sticky composer
+      */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        {/* ① Fixed top bar */}
         <ChatHeader
           isSidebarOpen={!isDesktopSidebarCollapsed}
           onToggleSidebar={handleToggleSidebar}
@@ -334,29 +449,65 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
           onSignOut={onSignOut}
         />
 
-        {/* Scrollable main area: chat content + composer + spacer + footer */}
-        <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
-          <div className="flex-1 flex flex-col min-h-0">
-            {activeConversation && activeConversation.messages.length > 0 ? (
-              <MessageList
-                messages={activeConversation.messages}
-                isTyping={isTyping}
-              />
-            ) : (
-              <div className="flex-1 flex flex-col">
+        {/* ② Chat viewport — stretches to fill remaining space */}
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+
+          {/* ── EMPTY STATE ─────────────────────────────────────────────────────
+              A single flex column that is itself scrollable (for very small screens).
+              justify-between pushes welcome content to top-center and composer
+              to the bottom of this container. On taller screens, justify-center
+              keeps everything vertically centered as a group.
+          ─────────────────────────────────────────────────────────────────────── */}
+          {!hasActiveChat && (
+            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+              {/* Centering wrapper — grows to fill, centers content vertically */}
+              <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8">
+                {/* Welcome section */}
                 <WelcomeState onSelectPrompt={(prompt) => handleSendMessage(prompt)} />
               </div>
-            )}
-          </div>
 
-          <MessageComposer
-            onSendMessage={handleSendMessage}
-            disabled={isTyping}
-          />
+              {/* Composer — anchored just below the welcome content */}
+              <div className="shrink-0 w-full">
+                <ComposerArea
+                  onSendMessage={handleSendMessage}
+                  disabled={isTyping}
+                  responseError={responseError}
+                  onRetry={handleRetry}
+                />
+              </div>
 
-          {/* Spacer ensures footer is always below the fold */}
-          <div className="min-h-[60vh] shrink-0" aria-hidden="true" />
-          <Footer />
+              {/* Footer below composer in empty state */}
+              <div className="shrink-0">
+                <Footer />
+              </div>
+            </div>
+          )}
+
+          {/* ── ACTIVE CHAT STATE ────────────────────────────────────────────────
+              MessageList scrolls independently inside flex-1.
+              Composer is a shrink-0 strip pinned at the bottom.
+          ─────────────────────────────────────────────────────────────────────── */}
+          {hasActiveChat && (
+            <>
+              {/* Scrollable conversation log */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <MessageList
+                  messages={activeConversation!.messages}
+                  isTyping={isTyping}
+                />
+              </div>
+
+              {/* Sticky composer at the bottom */}
+              <div className="shrink-0 w-full">
+                <ComposerArea
+                  onSendMessage={handleSendMessage}
+                  disabled={isTyping}
+                  responseError={responseError}
+                  onRetry={handleRetry}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -697,6 +848,54 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ComposerArea
+   Wraps MessageComposer + optional error banner.
+   Keeps all composer chrome in one place so both empty-state and active-chat
+   render identical composer UX.
+───────────────────────────────────────────────────────────────────────────── */
+interface ComposerAreaProps {
+  onSendMessage: (content: string, attachmentName?: string) => void;
+  disabled: boolean;
+  responseError: string | null;
+  onRetry: () => void;
+}
+
+const ComposerArea: React.FC<ComposerAreaProps> = ({
+  onSendMessage,
+  disabled,
+  responseError,
+  onRetry,
+}) => {
+  return (
+    <div className="bg-[#F7F8FA] border-t border-[#E2E8F0]/70">
+      {/* Error banner — shown when assistant response fails */}
+      {responseError && (
+        <div
+          role="alert"
+          className="max-w-[780px] mx-auto px-4 sm:px-6 pt-3"
+        >
+          <div className="flex items-center justify-between gap-3 px-4 py-3 bg-[#FFF7ED] border border-[#FED7AA] rounded-[8px] text-[13px]">
+            <span className="text-[#92400E] font-medium">{responseError}</span>
+            <button
+              type="button"
+              onClick={onRetry}
+              className="shrink-0 px-3 py-1.5 text-[13px] font-semibold text-[#C2410C] bg-white border border-[#FED7AA] hover:bg-[#FFF7ED] rounded-[6px] transition-colors cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+
+      <MessageComposer
+        onSendMessage={onSendMessage}
+        disabled={disabled}
+      />
     </div>
   );
 };
