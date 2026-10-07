@@ -44,7 +44,7 @@ export const WelcomeState: React.FC<WelcomeStateProps> = ({ onSelectPrompt }) =>
     <div className="w-full max-w-[720px] mx-auto flex flex-col items-center text-center">
       {/* Institutional Emblem */}
       <div className="mb-4">
-        <TnnmcEmblem size={48} className="w-11 h-11 sm:w-12 sm:h-12" />
+        <TnnmcEmblem size={48} className="w-11 h-11 sm:w-12 sm:h-12" alt="Nightingale chatbot logo" />
       </div>
 
       {/* Heading */}
@@ -54,7 +54,7 @@ export const WelcomeState: React.FC<WelcomeStateProps> = ({ onSelectPrompt }) =>
 
       {/* Supporting text */}
       <p className="mt-2 max-w-[560px] text-[14px] sm:text-[15px] text-[#5A6573] leading-6">
-        Ask about TNNMC services, registration, licensing, professional information and other council-related topics.
+        Welcome to Nightingale chatbot. Ask about registration, licensing, council services, and professional assistance.
       </p>
 
       {/* Horizontally scrollable topic chips on mobile, centered row on desktop */}

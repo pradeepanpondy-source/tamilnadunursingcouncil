@@ -152,7 +152,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
               <span className="font-medium">
                 {activeName}
               </span>{' '}
-              has been prepared. You may now proceed to the TNNMC digital service.
+              has been prepared. You may now proceed to Nightingale chatbot.
             </p>
           </div>
         </div>
@@ -163,7 +163,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
               type="button"
               onClick={() => onRegisterSuccess(activeIdentifier, activeName)}
             >
-              Continue to TNNMC Digital Service
+              Continue to Nightingale chatbot
             </PrimaryButton>
           )}
 
@@ -186,7 +186,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           Create Account
         </h1>
         <p className="mt-1.5 text-[15px] text-[#5A6573] leading-6">
-          Enter your details below to create an account for TNNMC digital services.
+          Enter your details below to create an account for Nightingale chatbot.
         </p>
       </div>
 

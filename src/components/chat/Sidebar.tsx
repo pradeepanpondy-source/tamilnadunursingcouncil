@@ -577,10 +577,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => { onNewChat(); onCloseMobile(); }}
           className="flex items-center gap-2.5 text-left min-w-0 rounded-[4px] focus:outline-none cursor-pointer"
         >
-          <TnnmcEmblem size={36} className="w-9 h-9 shrink-0" />
+          <TnnmcEmblem size={36} className="w-9 h-9 shrink-0" alt="Nightingale chatbot logo" />
           <div className="min-w-0">
-            <span className="block text-[14px] font-semibold text-[#1E242B] truncate leading-tight">TNNMC Assistant</span>
-            <span className="block text-[11px] text-[#5A6573] truncate leading-tight mt-0.5">Tamil Nadu Nursing Council</span>
+            <span className="block text-[14px] font-semibold text-[#1E242B] truncate leading-tight">Nightingale chatbot</span>
           </div>
         </button>
         <button
@@ -682,7 +681,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Bottom Area: Profile, Help, Settings, User */}
-      <div className="p-3 border-t border-[#E2E8F0] space-y-1 bg-[#FAFBFD]">
+      <div className="p-3 space-y-1 bg-[#FAFBFD]">
         <button type="button" onClick={() => { onOpenProfile(); onCloseMobile(); }} className="w-full px-2.5 py-2 text-left rounded-[6px] flex items-center gap-2.5 text-[13px] font-medium text-[#475569] hover:bg-[#F1F5F9] hover:text-[#1E242B] transition-colors duration-150 cursor-pointer">
           <User className="w-4 h-4 text-[#5A6573] shrink-0" aria-hidden="true" /><span>Profile</span>
         </button>

@@ -1,6 +1,6 @@
 {
-  "name": "TNNMC Digital Services — Authentication Portal",
-  "description": "Official authentication interface for the Tamil Nadu Nurses & Midwives Council (TNNMC) digital services.",
+  "name": "Nightingale chatbot — Digital Services",
+  "description": "Official authentication interface and assistant for Nightingale chatbot digital services.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -78,13 +78,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
     <div className="w-full py-4">
       <div className="max-w-[780px] mx-auto flex items-start gap-3.5">
         <div className="mt-0.5 shrink-0">
-          <TnnmcEmblem size={28} className="w-7 h-7" />
+          <TnnmcEmblem size={28} className="w-7 h-7" alt="Nightingale chatbot logo" />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-[13px] font-semibold text-[#1E242B] leading-5">
-              TNNMC Assistant
+              Nightingale chatbot
             </span>
             <span className="text-[12px] text-[#64748B] leading-4">
               {message.timestamp}

@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4 text-[13px] text-[#5A6573]">
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <div className="font-semibold text-[#1E242B]">
-              Tamil Nadu Nurses &amp; Midwives Council
+              Nightingale chatbot
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1.5 text-[#475569]">
               <a href="tel:+914446786539" className="hover:text-[#2C7A7B] transition-colors flex items-center gap-1">
@@ -100,11 +100,11 @@ export const Footer: React.FC = () => {
             <div className="p-6 text-[14px] text-[#334155] leading-6 space-y-3">
               {activeModal === 'privacy' ? (
                 <p>
-                  This authentication interface provides entry to the Tamil Nadu Nurses &amp; Midwives Council (TNNMC) digital services. For complete institutional privacy policies and official council notices, please refer to the official TNNMC website.
+                  This authentication interface provides entry to Nightingale chatbot. For complete institutional privacy policies and official council notices, please refer to the official TNNMC website.
                 </p>
               ) : (
                 <p>
-                  This portal serves as the authentication entry point for Tamil Nadu Nurses &amp; Midwives Council digital services. Official notices, circulars, and council resources are published on the official TNNMC website.
+                  This portal serves as the authentication entry point for Nightingale chatbot. Official notices, circulars, and council resources are published on the official TNNMC website.
                 </p>
               )}
 

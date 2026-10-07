@@ -1,6 +1,6 @@
 import React from 'react';
-import { PanelLeft } from 'lucide-react';
-
+import { PanelLeft, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export interface ChatHeaderProps {
   isSidebarOpen: boolean;
@@ -25,13 +25,15 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   onOpenHelp,
   onSignOut,
 }) => {
+  const { resolvedTheme, setTheme } = useTheme();
+
   return (
     <header className="w-full bg-white border-b border-[#E2E8F0] shrink-0">
       {/* Restrained 3px institutional crimson top bar matching the login page */}
       <div className="h-[3px] w-full bg-[#2C7A7B]" aria-hidden="true" />
 
       <div className="px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3">
-        {/* Left: Sidebar Toggle + Bilingual Tamil & English Council Title */}
+        {/* Left: Sidebar Toggle + Council Title */}
         <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
           <button
             type="button"
@@ -45,30 +47,32 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 
           <div className="min-w-0">
             <span
-              className="block text-[12px] sm:text-[14px] lg:text-[15px] font-bold text-[#1B4E7B] truncate leading-snug"
-              style={{ fontFamily: "'Noto Sans Tamil', sans-serif" }}
+              className="text-[15px] sm:text-[17px] lg:text-[18px] font-bold text-[#1B4E7B] truncate leading-snug block"
+              style={{ fontFamily: "'Libre Baskerville', Georgia, Cambria, serif" }}
             >
-              தமிழ்நாடு செவிலியர் மற்றும் மகப்பேறு செவிலியர் அவையம்
+              Nightingale chatbot
             </span>
-            <div className="flex items-baseline gap-2 min-w-0 mt-0.5">
-              <span
-                className="text-[13px] sm:text-[15px] lg:text-[16px] font-bold text-[#1B4E7B] truncate leading-snug"
-                style={{ fontFamily: "'Libre Baskerville', Georgia, Cambria, serif" }}
-              >
-                Tamil Nadu Nurses and Midwives Council
-              </span>
-              <span className="hidden xl:inline-block text-[11px] font-medium text-[#5A6573] truncate">
-                · TNNMC Assistant
-              </span>
-            </div>
           </div>
         </div>
 
-        {/* Right Top Corner: Contact Details + Social Icons + User Profile Menu */}
-        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-          {/* Profile and contact details removed as requested */}
+        {/* Right Top Corner: Theme Toggle */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            aria-label={resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            title={resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            className="h-9 w-9 inline-flex items-center justify-center text-[#5A6573] hover:text-[#1E242B] hover:bg-[#F1F5F9] rounded-[6px] transition-colors duration-150 cursor-pointer"
+          >
+            {resolvedTheme === 'dark' ? (
+              <Sun className="w-4 h-4 text-[#F59E0B]" aria-hidden="true" />
+            ) : (
+              <Moon className="w-4 h-4 text-[#475569]" aria-hidden="true" />
+            )}
+          </button>
         </div>
       </div>
     </header>
   );
 };
+

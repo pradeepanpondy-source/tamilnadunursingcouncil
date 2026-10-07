@@ -5,17 +5,195 @@
   --font-ui: "Inter", "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+/* ─── Light Theme (default) CSS Variables ──────────────────────────────────── */
+:root {
+  --bg-page:               #F7F8FA;
+  --bg-surface:            #FFFFFF;
+  --bg-surface-secondary:  #F8FAFC;
+  --bg-surface-tertiary:   #F1F5F9;
+  --bg-sidebar:            #FFFFFF;
+  --bg-composer:           #F7F8FA;
+  --bg-composer-input:     #FFFFFF;
+  --bg-chat:               #F7F8FA;
+  --bg-user-bubble:        #FFFFFF;
+  --bg-modal:              #FFFFFF;
+  --bg-input:              #FFFFFF;
+  --bg-hover:              #F1F5F9;
+  --bg-active:             #E2E8F0;
+  --bg-accent:             #2C7A7B;
+  --bg-accent-hover:       #286A6B;
+  --bg-accent-active:      #1F5050;
+  --bg-accent-subtle:      #F0FDFA;
+
+  --text-primary:          #1E242B;
+  --text-secondary:        #5A6573;
+  --text-muted:            #94A3B8;
+  --text-accent:           #2C7A7B;
+  --text-accent-hover:     #235F5F;
+  --text-on-accent:        #FFFFFF;
+  --text-heading:          #1B4E7B;
+
+  --border:                #E2E8F0;
+  --border-strong:         #CBD5E1;
+  --border-accent:         rgba(44, 122, 123, 0.40);
+
+  --shadow-sm:             0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md:             0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg:             0 8px 24px rgba(15, 23, 42, 0.10);
+
+  --overlay:               rgba(15, 23, 42, 0.40);
+  --accent-bar:            #2C7A7B;
+}
+
+/* ─── Dark Theme CSS Variables ─────────────────────────────────────────────── */
+.dark {
+  --bg-page:               #111827;
+  --bg-surface:            #1F2937;
+  --bg-surface-secondary:  #182230;
+  --bg-surface-tertiary:   #263345;
+  --bg-sidebar:            #182230;
+  --bg-composer:           #111827;
+  --bg-composer-input:     #1F2937;
+  --bg-chat:               #111827;
+  --bg-user-bubble:        #1F2937;
+  --bg-modal:              #1F2937;
+  --bg-input:              #263345;
+  --bg-hover:              #283548;
+  --bg-active:             #334155;
+  --bg-accent:             #2C7A7B;
+  --bg-accent-hover:       #286A6B;
+  --bg-accent-active:      #1F5050;
+  --bg-accent-subtle:      rgba(44, 122, 123, 0.18);
+
+  --text-primary:          #E2E8F0;
+  --text-secondary:        #94A3B8;
+  --text-muted:            #64748B;
+  --text-accent:           #4DB6BA;
+  --text-accent-hover:     #63CBCE;
+  --text-on-accent:        #FFFFFF;
+  --text-heading:          #93C5FD;
+
+  --border:                #2B384A;
+  --border-strong:         #3B4B61;
+  --border-accent:         rgba(77, 182, 186, 0.40);
+
+  --shadow-sm:             0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow-md:             0 4px 12px rgba(0, 0, 0, 0.40);
+  --shadow-lg:             0 8px 24px rgba(0, 0, 0, 0.50);
+
+  --overlay:               rgba(0, 0, 0, 0.65);
+  --accent-bar:            #2C7A7B;
+}
+
 @layer base {
   html {
     font-family: var(--font-ui);
-    color: #1E242B;
-    background-color: #F7F8FA;
+    color: var(--text-primary);
+    background-color: var(--bg-page);
     -webkit-text-size-adjust: 100%;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
   }
 
   /* Clear, accessible keyboard focus ring */
   *:focus-visible {
-    outline: 2px solid #2C7A7B;
+    outline: 2px solid var(--bg-accent);
     outline-offset: 2px;
   }
+
+  /* Scrollbar theming */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border-strong);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-muted);
+  }
 }
+
+/* ─── Dark Theme Overrides for Existing Utility Classes ────────────────────── */
+.dark .bg-white {
+  background-color: var(--bg-surface) !important;
+}
+
+.dark .bg-\[\#F7F8FA\],
+.dark .bg-\[\#F8FAFC\],
+.dark .bg-\[\#FAFBFD\] {
+  background-color: var(--bg-surface-secondary) !important;
+}
+
+.dark .bg-\[\#F1F5F9\] {
+  background-color: var(--bg-surface-tertiary) !important;
+}
+
+.dark .border-\[\#E2E8F0\],
+.dark .border-\[\#DCE1E7\],
+.dark .border-\[\#CBD5E1\] {
+  border-color: var(--border) !important;
+}
+
+.dark .text-\[\#1E242B\],
+.dark .text-\[\#0F172A\],
+.dark .text-\[\#334155\] {
+  color: var(--text-primary) !important;
+}
+
+.dark .text-\[\#5A6573\],
+.dark .text-\[\#475569\],
+.dark .text-\[\#64748B\] {
+  color: var(--text-secondary) !important;
+}
+
+.dark .text-\[\#1B4E7B\] {
+  color: var(--text-heading) !important;
+}
+
+.dark .text-\[\#8893A2\],
+.dark .text-\[\#94A3B8\] {
+  color: var(--text-muted) !important;
+}
+
+.dark .hover\:bg-\[\#F1F5F9\]:hover,
+.dark .hover\:bg-\[\#F8FAFC\]:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+.dark .active\:bg-\[\#F1F5F9\]:active,
+.dark .active\:bg-\[\#E2E8F0\]:active {
+  background-color: var(--bg-active) !important;
+}
+
+.dark textarea {
+  color: var(--text-primary) !important;
+}
+
+.dark textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]) {
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+.dark select {
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+/* Hide horizontal scrollbar but allow scrolling */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

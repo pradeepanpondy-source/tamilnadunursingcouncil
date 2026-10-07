@@ -6,6 +6,9 @@ import {
   Camera,
   CheckCircle2,
   User,
+  Sun,
+  Moon,
+  Monitor,
 } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { ChatHeader } from './ChatHeader';
@@ -13,6 +16,7 @@ import { WelcomeState } from './WelcomeState';
 import { MessageList } from './MessageList';
 import { MessageComposer } from './MessageComposer';
 import { Footer } from '../Footer';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
   Conversation,
   Message,
@@ -92,6 +96,7 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
   userName,
   onSignOut,
 }) => {
+  const { theme, setTheme } = useTheme();
   const [conversations, setConversations] = useState<Conversation[]>(() =>
     loadPersistedConversations()
   );
@@ -405,7 +410,7 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
     activeConversation !== null && activeConversation.messages.length > 0;
 
   return (
-    <div className="h-screen w-full overflow-hidden flex bg-[#F7F8FA] text-[#1E242B]">
+    <div className="h-screen w-full overflow-hidden flex" style={{ backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       {/* Left Sidebar (Collapsible on Desktop, Slide-Out Drawer on Mobile) */}
       <Sidebar
         conversations={conversations}
@@ -534,7 +539,7 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
                 {activeDialog === 'profile'
                   ? 'Member Profile & Basic Details'
                   : activeDialog === 'help'
-                  ? 'About TNNMC Assistant'
+                  ? 'About Nightingale chatbot'
                   : 'Assistant Settings'}
               </h2>
               <button
@@ -774,7 +779,7 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
               <>
                 <div className="p-6 text-[14px] text-[#334155] leading-6 space-y-3">
                   <p>
-                    <strong>TNNMC Assistant</strong> provides guidance on Tamil Nadu Nurses &amp; Midwives Council services, including registration requirements, license status verification, renewal procedures, and Continuing Nursing Education (CNE) information.
+                    <strong>Nightingale chatbot</strong> provides guidance on Tamil Nadu Nurses &amp; Midwives Council services, including registration requirements, license status verification, renewal procedures, and Continuing Nursing Education (CNE) information.
                   </p>
                   <p>
                     Responses in this interface are for informational guidance. To submit official applications or verify live registry records, please use the official TNNMC website.
@@ -805,40 +810,77 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
 
             {activeDialog === 'settings' && (
               <>
-                <div className="p-6 text-[14px] text-[#334155] space-y-4">
-                  <div className="p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[6px]">
-                    <div className="text-[12px] font-medium text-[#5A6573]">
+                <div className="p-6 text-[14px] space-y-4" style={{ color: 'var(--text-secondary)' }}>
+                  {/* Signed-in account */}
+                  <div className="p-3.5 rounded-[6px] border" style={{ backgroundColor: 'var(--bg-surface-secondary)', borderColor: 'var(--border)' }}>
+                    <div className="text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>
                       Signed-in Account
                     </div>
-                    <div className="text-[14px] font-semibold text-[#1E242B] mt-0.5 break-all">
+                    <div className="text-[14px] font-semibold mt-0.5 break-all" style={{ color: 'var(--text-primary)' }}>
                       {displayedEmail}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between gap-4 pt-2 border-t border-[#E2E8F0]">
+                  {/* Theme selector */}
+                  <div className="pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                    <div className="text-[14px] font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Appearance</div>
+                    <div role="group" aria-label="Theme selection" className="flex items-center gap-2">
+                      {(
+                        [
+                          { id: 'light', label: 'Light', icon: Sun },
+                          { id: 'dark',  label: 'Dark',  icon: Moon },
+                          { id: 'system', label: 'System', icon: Monitor },
+                        ] as const
+                      ).map(({ id, label, icon: Icon }) => {
+                        const isActive = theme === id;
+                        return (
+                          <button
+                            key={id}
+                            type="button"
+                            onClick={() => setTheme(id)}
+                            aria-pressed={isActive}
+                            className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 text-[13px] font-medium rounded-[6px] border transition-colors duration-150 cursor-pointer"
+                            style={{
+                              backgroundColor: isActive ? 'var(--bg-accent)' : 'var(--bg-surface)',
+                              color: isActive ? 'var(--text-on-accent)' : 'var(--text-secondary)',
+                              borderColor: isActive ? 'var(--bg-accent)' : 'var(--border-strong)',
+                            }}
+                          >
+                            <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                            <span>{label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Conversation history */}
+                  <div className="flex items-center justify-between gap-4 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
                     <div>
-                      <div className="text-[14px] font-medium text-[#1E242B]">
+                      <div className="text-[14px] font-medium" style={{ color: 'var(--text-primary)' }}>
                         Conversation History
                       </div>
-                      <div className="text-[12px] text-[#5A6573]">
+                      <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
                         Restore default demonstration conversations
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={handleResetHistory}
-                      className="px-3 py-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#2C7A7B] bg-white hover:bg-[#F0FDFA]/60 border border-[#CBD5E1] rounded-[6px] transition-colors cursor-pointer shrink-0"
+                      className="px-3 py-2 inline-flex items-center gap-1.5 text-[13px] font-medium rounded-[6px] border transition-colors cursor-pointer shrink-0"
+                      style={{ color: 'var(--text-accent)', backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-strong)' }}
                     >
                       <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                       <span>Reset</span>
                     </button>
                   </div>
                 </div>
-                <div className="px-6 py-3.5 bg-[#F8FAFC] border-t border-[#E2E8F0] flex justify-end">
+                <div className="px-6 py-3.5 border-t flex justify-end" style={{ backgroundColor: 'var(--bg-surface-secondary)', borderColor: 'var(--border)' }}>
                   <button
                     type="button"
                     onClick={() => setActiveDialog(null)}
-                    className="px-4 py-2 text-[13px] font-semibold text-[#1E242B] bg-white border border-[#CBD5E1] hover:bg-[#F1F5F9] rounded-[6px] transition-colors cursor-pointer"
+                    className="px-4 py-2 text-[13px] font-semibold rounded-[6px] border transition-colors cursor-pointer"
+                    style={{ color: 'var(--text-primary)', backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-strong)' }}
                   >
                     Close
                   </button>
@@ -872,7 +914,7 @@ const ComposerArea: React.FC<ComposerAreaProps> = ({
   onRetry,
 }) => {
   return (
-    <div className="bg-[#F7F8FA] border-t border-[#E2E8F0]/70">
+    <div style={{ backgroundColor: 'var(--bg-composer)' }}>
       {/* Error banner — shown when assistant response fails */}
       {responseError && (
         <div

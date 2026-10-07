@@ -227,7 +227,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
 
             {/* Multiline Text Input Area */}
             <label htmlFor="chat-message-composer" className="sr-only">
-              Message TNNMC Assistant
+              Message Nightingale chatbot
             </label>
             <textarea
               id="chat-message-composer"
@@ -242,7 +242,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                   ? 'Listening...'
                   : isTranscribing
                   ? 'Transcribing...'
-                  : 'Message TNNMC Assistant...'
+                  : 'Message Nightingale chatbot...'
               }
               className="flex-1 max-h-[160px] py-1.5 px-1.5 text-[16px] sm:text-[15px] leading-6 text-[#1E242B] bg-transparent placeholder:text-[#8893A2] resize-none focus:outline-none disabled:text-[#64748B] disabled:cursor-not-allowed"
             />
@@ -261,7 +261,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         </form>
 
         <p className="mt-2 text-center text-[12px] text-[#64748B] leading-4">
-          Tamil Nadu Nurses &amp; Midwives Council · Official Information Assistant
+          Nightingale chatbot · Official Information Assistant
         </p>
       </div>
     </div>

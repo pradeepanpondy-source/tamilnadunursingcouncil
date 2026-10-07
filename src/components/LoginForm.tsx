@@ -141,7 +141,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
               <span className="font-medium break-all">
                 {activeUser}
               </span>
-              . {isRedirecting ? 'Redirecting to the TNNMC digital service...' : 'You may now proceed to the TNNMC digital service.'}
+              . {isRedirecting ? 'Redirecting to Nightingale chatbot...' : 'You may now proceed to Nightingale chatbot.'}
             </p>
           </div>
         </div>
@@ -150,13 +150,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <PrimaryButton
             type="button"
             isLoading={isRedirecting}
-            loadingText="Opening TNNMC Digital Service..."
+            loadingText="Opening Nightingale chatbot..."
             onClick={() => {
               onClearPreset?.();
               onLoginSuccess(activeUser);
             }}
           >
-            Continue to TNNMC Digital Service
+            Continue to Nightingale chatbot
           </PrimaryButton>
 
           <PrimaryButton
